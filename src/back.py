@@ -32,10 +32,10 @@ class Parser:
 		quarter_list = quarter_list[5:]				# Обрезали ввиду верстки
 		for i in range(5, len(quarter_list), 6):
 			quarter_list_result.append(quarter_list[i])
-		standart_hours = quarter_list_result[quarter].find_all_next('div', class_='col-md-3 col-xs-2')[month].text\
+		standard_hours = quarter_list_result[quarter].find_all_next('div', class_='col-md-3 col-xs-2')[month].text\
 			.split()[duration[week_duration]].strip() 	# Магия и ты гений
-		# print(standart_hours)
-		return standart_hours
+		# print(standard_hours)
+		return standard_hours
 
 
 pars = Parser()
