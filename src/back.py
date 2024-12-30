@@ -10,9 +10,9 @@ class Parser:
 			'Accept': "*/*",
 			'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0 (Edition Yx 05)"
 		}
-		url = 'https://www.consultant.ru/law/ref/calendar/proizvodstvennye/2025'
-		req = requests.get(url, headers)
 		year = datetime.date.today().year
+		url = f'https://www.consultant.ru/law/ref/calendar/proizvodstvennye/{year}'
+		req = requests.get(url, headers)
 		with open(fr'C:\Users\dima2\AppData\Local\Temp\calendar_{year}', 'w', encoding='utf-8') as file:
 			file.write(req.text)
 		with open(fr'C:\Users\dima2\AppData\Local\Temp\calendar_{year}', 'r', encoding='utf-8') as file:
