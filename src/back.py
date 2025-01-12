@@ -1,6 +1,6 @@
 import bs4
 import requests
-import os
+import openpyxl
 import datetime
 
 
@@ -38,5 +38,14 @@ class Parser:
 		return standard_hours
 
 
-pars = Parser()
-print(pars.get_standard_hours(2, 1, '40'))
+class Excel:
+	def __init__(self, path):
+		self.workbook = openpyxl.load_workbook(path)
+		self.worksheet = self.workbook.active
+
+	def get_jobs_and_div(self):
+		dict = {}
+		for i in range(0, self.worksheet.max_column):
+			for col in self.worksheet.iter_rows(2, self.worksheet.max_row):
+				dict[col[1].value] = [col[2].value, col[3].value]
+		return dict
