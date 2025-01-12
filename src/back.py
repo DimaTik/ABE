@@ -2,6 +2,8 @@ import bs4
 import requests
 import openpyxl
 import datetime
+import pprint
+import time
 
 
 class Parser:
@@ -49,3 +51,21 @@ class Excel:
 			for col in self.worksheet.iter_rows(2, self.worksheet.max_row):
 				dict[col[1].value] = [col[2].value, col[3].value]
 		return dict
+
+
+class Adesk: 	# После получения доступа к данным, попробовать вытащить контрагента
+	def __init__(self):
+		self.API = '415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e'
+
+	def get_project(self):
+		response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
+		while not response.ok:
+			response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
+			time.sleep(2)
+		data_json = response.json()
+		data = []
+		for project in range(len(data_json['projects'])):
+			numbers_of_project = data_json['projects'][project]['name'][:4]
+			plan_incomes = data_json['projects'][project]['planIncome']
+			data.append([numbers_of_project, plan_incomes])
+		return data
