@@ -42,10 +42,22 @@ class Excel:
 	def __init__(self, path):
 		self.workbook = openpyxl.load_workbook(path)
 		self.worksheet = self.workbook.active
+		self.data = {}
 
 	def get_jobs_and_div(self):
-		dict = {}
-		for i in range(0, self.worksheet.max_column):
-			for col in self.worksheet.iter_rows(2, self.worksheet.max_row):
-				dict[col[1].value] = [col[2].value, col[3].value]
-		return dict
+		for row in self.worksheet.iter_rows(2, self.worksheet.max_row):
+			self.data[row[1].value] = [row[2].value, row[3].value, row[5].value]
+		return self.data
+
+
+class Bitrix:
+	def __init__(self, path):
+		self.workbook = openpyxl.load_workbook(path)
+		self.worksheet = self.workbook.active
+		self.data = {}
+
+	def get_hours(self):
+		for row in range(3, self.worksheet.max_row-1):
+			# for col in range(1, self.worksheet.max_column):
+			self.data[self.worksheet[row][1].value] = [self.worksheet[row][2].value, [dict([(int(self.worksheet[2][i].value[:4]), self.worksheet[row][i].value)]) for i in range(3, self.worksheet.max_row-3)]]
+		return self.data
