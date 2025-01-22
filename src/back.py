@@ -56,6 +56,7 @@ class Excel:
 class Adesk: 	# После получения доступа к данным, попробовать вытащить контрагента
 	def __init__(self):
 		self.API = '415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e'
+		self.data = {}
 
 	def get_project(self):
 		response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
@@ -63,9 +64,10 @@ class Adesk: 	# После получения доступа к данным, п
 			response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
 			time.sleep(2)
 		data_json = response.json()
-		data = []
 		for project in range(len(data_json['projects'])):
+			pprint.pprint(data_json)
 			numbers_of_project = data_json['projects'][project]['name'][:4]
-			plan_incomes = data_json['projects'][project]['planIncome']
-			data.append([numbers_of_project, plan_incomes])
-		return data
+			incomes = float(data_json['projects'][project]['income'])
+			plan_incomes = float(data_json['projects'][project]['planIncome'])
+			self.data[numbers_of_project] = (incomes, plan_incomes)
+		return self.data
