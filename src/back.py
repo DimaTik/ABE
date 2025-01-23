@@ -65,7 +65,7 @@ class Bitrix:
 			self.data[self.worksheet[row][1].value] = [self.worksheet[row][2].value, [dict([(int(self.worksheet[2][i].value[:4]), self.worksheet[row][i].value)]) for i in range(3, self.worksheet.max_row-3)]]
 		return self.data
 
-	def get_project_in_month(self):
+	def get_projects_in_month(self):
 		return [int(self.worksheet[2][i].value[:4]) for i in range(3, self.worksheet.max_row - 3)]
 
 

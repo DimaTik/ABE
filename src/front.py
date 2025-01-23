@@ -2,16 +2,27 @@ import time
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import os
 
 
 class Window:
 	def __init__(self):
+		self.api_text_path = os.path.abspath(rf'C:\Users\{os.getlogin()}\.accountant\api.txt')
+		self.api_text = ''
 		self.flag_ready = False
 		self.PAD = 3
 		self.WIDTH = 40
 		self.months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Ноябрь', 'Октябрь', 'Декабрь']
+		if os.path.isfile(self.api_text_path):
+			with open(self.api_text_path, encoding='utf-8') as f:
+				self.api_text = f.readline()
+		else:
+			os.mkdir(rf'C:\Users\{os.getlogin()}\.accountant')
+			with open(self.api_text_path, 'w', encoding='utf-8') as f:
+				f.write('0')
+
 		self.root = tk.Tk()
-		self.root.title('Подсчет ЗП')
+		self.root.title('Accountant')
 		self.root.resizable(False, False)
 
 		self.frm = tk.Frame(self.root)
@@ -23,6 +34,7 @@ class Window:
 		tk.Label(self.frm, text='Путь к Bitrix').grid(column=0, row=3, sticky='w', padx=self.PAD, pady=self.PAD)
 
 		self.api = tk.Entry(self.frm, width=self.WIDTH)
+		self.api.insert(0, self.api_text)
 		self.month = ttk.Combobox(self.frm, width=self.WIDTH-3, values=self.months)
 		self.excel_path = tk.Entry(self.frm, width=self.WIDTH)
 		self.bitrix_path = tk.Entry(self.frm, width=self.WIDTH)
@@ -35,6 +47,9 @@ class Window:
 		self.str_btn.grid(column=0, row=4, columnspan=2, padx=self.PAD, pady=self.PAD)
 
 	def get_data(self):
+		if self.api_text != self.api.get():
+			with open(self.api_text_path, 'w', encoding='utf-8') as f:
+				f.write(self.api.get())
 		data = (self.api.get(), self.month.get(), self.excel_path.get(), self.bitrix_path.get())
 		self.flag_ready = False
 		if '' in data:
