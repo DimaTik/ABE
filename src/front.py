@@ -9,11 +9,10 @@ class Window:
 		self.flag_ready = False
 		self.PAD = 3
 		self.WIDTH = 40
-		self.months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Декабрь']
+		self.months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Ноябрь', 'Октябрь', 'Декабрь']
 		self.root = tk.Tk()
 		self.root.title('Подсчет ЗП')
 		self.root.resizable(False, False)
-		# self.root.geometry('500x500')
 
 		self.frm = tk.Frame(self.root)
 		self.frm.pack()

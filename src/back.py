@@ -6,7 +6,7 @@ import pprint
 import time
 
 
-class Parser:
+class Consultant:
 	def __init__(self):
 		headers = {
 			'Accept': "*/*",
@@ -22,7 +22,10 @@ class Parser:
 
 		self.soup = bs4.BeautifulSoup(src, 'lxml')
 
-	def get_standard_hours(self, quarter, month, week_duration):
+	def get_standard_hours(self, month):
+		months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+		quarters = {'Январь': 0, 'Февраль': 0, 'Март': 0, 'Апрель': 1, 'Май': 1, 'Июнь': 1, 'Июль': 2, 'Август': 2, 'Сентябрь': 2, 'Ноябрь': 3,	'Октябрь': 3, 'Декабрь': 3}
+		quarter = quarters[month]
 		duration = {
 			'40': 0,
 			'36': 1,
@@ -34,9 +37,8 @@ class Parser:
 		quarter_list = quarter_list[5:]				# Обрезали ввиду верстки
 		for i in range(5, len(quarter_list), 6):
 			quarter_list_result.append(quarter_list[i])
-		standard_hours = quarter_list_result[quarter].find_all_next('div', class_='col-md-3 col-xs-2')[month].text\
-			.split()[duration[week_duration]].strip() 	# Магия и ты гений
-		# print(standard_hours)
+		standard_hours = quarter_list_result[quarter].find_all_next('div', class_='col-md-3 col-xs-2')[months.index(month)].text\
+			.split()[duration['40']].strip() 	# Магия и ты гений
 		return standard_hours
 
 
@@ -60,14 +62,17 @@ class Bitrix:
 
 	def get_hours(self):
 		for row in range(3, self.worksheet.max_row-1):
-			# for col in range(1, self.worksheet.max_column):
 			self.data[self.worksheet[row][1].value] = [self.worksheet[row][2].value, [dict([(int(self.worksheet[2][i].value[:4]), self.worksheet[row][i].value)]) for i in range(3, self.worksheet.max_row-3)]]
 		return self.data
 
+	def get_project_in_month(self):
+		return [int(self.worksheet[2][i].value[:4]) for i in range(3, self.worksheet.max_row - 3)]
+
 
 class Adesk: 	# После получения доступа к данным, попробовать вытащить контрагента
-	def __init__(self):
-		self.API = '415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e'
+	def __init__(self, api):
+		# '415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e'
+		self.API = api
 		self.data = {}
 
 	def get_project(self):
