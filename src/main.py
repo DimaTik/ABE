@@ -10,9 +10,11 @@ def main():
 		data = window.get_data()
 		adesk = back.Adesk(data[0])
 		consultant = back.Consultant()
-		# excel = back.Excel(data[2])
+		excel = back.Excel(data[2])
 		bitrix = back.Bitrix(data[3])
-		print(bitrix.get_projects_in_month())
+
+		# excel.create_result_table()
+		# excel.create_result_table()
 
 
 if __name__ == '__main__':
