@@ -5,6 +5,9 @@ import datetime
 import pprint
 import time
 
+months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь',
+		  'Декабрь']
+
 
 class Consultant:
 	def __init__(self):
@@ -33,10 +36,10 @@ class Consultant:
 			'36': 1,
 			'24': 2
 		}
-		quarter_list = self.soup.find('div', class_='block-print').find_next_sibling().find_next_sibling(). \
-			find_all('div', class_='row')  # Нашли divs
-		quarter_list_result = [quarter_list[4]]  # Нашли первый квартал
-		quarter_list = quarter_list[5:]  # Обрезали ввиду верстки
+		quarter_list = self.soup.find('div', class_='block-print').find_next_sibling().find_next_sibling().\
+			find_all('div', class_='row') 			# Нашли divs
+		quarter_list_result = [quarter_list[4]] 	# Нашли первый квартал
+		quarter_list = quarter_list[5:]				# Обрезали ввиду верстки
 		for i in range(5, len(quarter_list), 6):
 			quarter_list_result.append(quarter_list[i])
 		standard_hours = \
@@ -105,23 +108,39 @@ class Bitrix:
 		return self.path.split('\\')[-1].split('_')[0]
 
 
-class Adesk:
+class Adesk: 	# После получения доступа к данным, попробовать вытащить контрагента
 	def __init__(self, api):
 		# '415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e'
 		self.API = api
 		self.data = {}
 
-	def get_project(self):
-		data = {}
+		response = requests.get(f'https://api.adesk.ru/v1/transactions?api_token={self.API}')
+		while not response.ok:
+			response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
+			time.sleep(1)
+		self.income_json = response.json()
+
+	def get_projects(self):
 		response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
 		while not response.ok:
 			response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
-			time.sleep(2)
+			time.sleep(1)
 		data_json = response.json()
-		for project in range(len(data_json['projects'])):
+		for i in range(len(data_json['projects'])):
 			pprint.pprint(data_json)
-			numbers_of_project = data_json['projects'][project]['name'][:4]
-			incomes = float(data_json['projects'][project]['income'])
-			plan_incomes = float(data_json['projects'][project]['planIncome'])
-			data[numbers_of_project] = (incomes, plan_incomes)
-		return data
+			numbers_of_project = data_json['projects'][i]['name'][:4]
+			id_of_project = data_json['projects'][i]['id']
+			incomes = float(data_json['projects'][i]['income'])
+			plan_incomes = float(data_json['projects'][i]['planIncome'])
+			self.data[numbers_of_project] = (incomes, plan_incomes)
+		return self.data
+
+	def get_income_of_project_in_month(self, month, year, id_proj):
+		income = 0
+		start = datetime.datetime.strptime(f"1.{months.index(month)+1}.{year}", "%d.%m.%Y")
+		end = datetime.datetime.strptime(f"31.{months.index(month)+1}.{year}", "%d.%m.%Y")
+		for i in range(self.income_json['recordsTotal']):
+			now = datetime.datetime.strptime(self.income_json['transactions'][i]['date'], "%d.%m.%Y")
+			if (self.income_json['transactions'][i]['project']['id'] == id_proj) and (start <= now <= end):
+				income += float(self.income_json['transactions'][i]['amount'])
+		return income

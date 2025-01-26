@@ -20,8 +20,10 @@ def main():
 if __name__ == '__main__':
 	consul = back.Consultant()
 	window = front.Window()
-	th.Thread(target=main, daemon=True).start()
-	window.mainloop()
+	adesk = back.Adesk('415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e')
+	print(adesk.get_projects())
+	# th.Thread(target=main, daemon=True).start()
+	# window.mainloop()
 
 # excel = back.Excel(r'D:\Dima\Python\ABE\beginning.xlsx')
 # print(excel.get_jobs_and_div())
