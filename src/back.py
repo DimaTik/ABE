@@ -144,3 +144,8 @@ class Adesk: 	# После получения доступа к данным, п
 			if (self.income_json['transactions'][i]['project']['id'] == id_proj) and (start <= now <= end):
 				income += float(self.income_json['transactions'][i]['amount'])
 		return income
+
+
+class Accountant:
+	def calculating_wages(self, worked_hours, standard_hours, salary_rate):
+		return (worked_hours/standard_hours)*salary_rate
