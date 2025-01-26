@@ -11,6 +11,14 @@ months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май'
 
 class Consultant:
 	def __init__(self):
+		self.quarters = {'Январь': [0, 0], 'Февраль': [0, 1], 'Март': [0, 2], 'Апрель': [1, 0], 'Май': [1, 1],
+						 'Июнь': [1, 2], 'Июль': [2, 0], 'Август': [2, 1], 'Сентябрь': [2, 2], 'Ноябрь': [3, 0],
+						 'Октябрь': [3, 1], 'Декабрь': [3, 2]}
+		self.duration = {
+			'40': 0,
+			'36': 1,
+			'24': 2
+		}
 		headers = {
 			'Accept': "*/*",
 			'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0 (Edition Yx 05)"
@@ -26,26 +34,18 @@ class Consultant:
 		self.soup = bs4.BeautifulSoup(src, 'lxml')
 
 	def get_standard_hours(self, month):
-		months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь',
-				  'Ноябрь', 'Декабрь']
-		quarters = {'Январь': 0, 'Февраль': 0, 'Март': 0, 'Апрель': 1, 'Май': 1, 'Июнь': 1, 'Июль': 2, 'Август': 2,
-					'Сентябрь': 2, 'Ноябрь': 3, 'Октябрь': 3, 'Декабрь': 3}
-		quarter = quarters[month]
-		duration = {
-			'40': 0,
-			'36': 1,
-			'24': 2
-		}
-		quarter_list = self.soup.find('div', class_='block-print').find_next_sibling().find_next_sibling().\
-			find_all('div', class_='row') 			# Нашли divs
-		quarter_list_result = [quarter_list[4]] 	# Нашли первый квартал
-		quarter_list = quarter_list[5:]				# Обрезали ввиду верстки
+		quarter = self.quarters[month][0]
+		quarter_list = self.soup.find('div', class_='block-print').find_next_sibling().find_next_sibling(). \
+			find_all('div', class_='row')  # Нашли divs
+		quarter_list_result = [quarter_list[4]]  # Нашли первый квартал
+		quarter_list = quarter_list[5:]  # Обрезали ввиду верстки
 		for i in range(5, len(quarter_list), 6):
 			quarter_list_result.append(quarter_list[i])
 		standard_hours = \
 			float(
-				quarter_list_result[quarter].find_all_next('div', class_='col-md-3 col-xs-2')[months.index(month)].text \
-				.split()[duration['40']].strip())  # Магия и ты гений
+				quarter_list_result[quarter].find_all_next('div', class_='col-md-3 col-xs-2')
+				[self.quarters[month][1]].text \
+					.split()[self.duration['40']].strip().replace(',', '.'))  # Магия и ты гений
 		return standard_hours
 
 
@@ -62,7 +62,7 @@ class Excel:
 		return self.data
 
 	def create_result_table(self, month, data):
-		for proj in data[...]: 	# Номер проекта
+		for proj in data[...]:  # Номера проекта
 			sheet = self.result_workbook.create_sheet([str(proj)])
 			for i, j in zip(range(6),
 							['Проект', 'ФИО', 'Должность', 'Отдел', 'Часы', 'Деньги']):
@@ -77,10 +77,10 @@ class Excel:
 		self.result_workbook.save(f'{month}_{datetime.datetime.today().year}.xlsx')
 
 	def set_result_table(self, month, data):
-		for proj in data[...]: 	# Номер проекта
+		for proj in data[...]:  # Номер проекта
 			sheet = self.result_workbook[str(proj)]
 			for i in range(1, 6):
-				sheet[...][...] = data[...] 	# Заполнение данных
+				sheet[...][...] = data[...]  # Заполнение данных
 			sheet[f'E{sheet.max_row}'] = data[...]  # Итог часов на проект
 			sheet[f'F{sheet.max_row}'] = data[...]  # Итог выплаченных денег
 
@@ -108,7 +108,7 @@ class Bitrix:
 		return self.path.split('\\')[-1].split('_')[0]
 
 
-class Adesk: 	# После получения доступа к данным, попробовать вытащить контрагента
+class Adesk:  # После получения доступа к данным, попробовать вытащить контрагента
 	def __init__(self, api):
 		# '415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e'
 		self.API = api
@@ -137,8 +137,8 @@ class Adesk: 	# После получения доступа к данным, п
 
 	def get_income_of_project_in_month(self, month, year, id_proj):
 		income = 0
-		start = datetime.datetime.strptime(f"1.{months.index(month)+1}.{year}", "%d.%m.%Y")
-		end = datetime.datetime.strptime(f"31.{months.index(month)+1}.{year}", "%d.%m.%Y")
+		start = datetime.datetime.strptime(f"1.{months.index(month) + 1}.{year}", "%d.%m.%Y")
+		end = datetime.datetime.strptime(f"31.{months.index(month) + 1}.{year}", "%d.%m.%Y")
 		for i in range(self.income_json['recordsTotal']):
 			now = datetime.datetime.strptime(self.income_json['transactions'][i]['date'], "%d.%m.%Y")
 			if (self.income_json['transactions'][i]['project']['id'] == id_proj) and (start <= now <= end):
@@ -148,4 +148,4 @@ class Adesk: 	# После получения доступа к данным, п
 
 class Accountant:
 	def calculating_wages(self, worked_hours, standard_hours, salary_rate):
-		return (worked_hours/standard_hours)*salary_rate
+		return (worked_hours / standard_hours) * salary_rate
