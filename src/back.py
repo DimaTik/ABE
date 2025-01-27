@@ -62,14 +62,14 @@ class Excel:
 		return self.data
 
 	def create_result_table(self, month, data):
-		for proj in data[...]:  # Номера проекта
-			sheet = self.result_workbook.create_sheet([str(proj)])
+		for i in range(data):  # Номера проекта
+			sheet = self.result_workbook.create_sheet([data[i][0]])
 			for i, j in zip(range(6),
 							['Проект', 'ФИО', 'Должность', 'Отдел', 'Часы', 'Деньги']):
 				sheet[0][i] = j
 
 			sheet.merge_cells(f'A2', f'A{sheet.max_row - 1}')
-			sheet['A2'] = proj
+			sheet['A2'] = data[i][0]
 
 			sheet.merge_cells(f'A{sheet.max_row}', f'D{sheet.max_row}')
 			sheet[f'A{sheet.max_row}'] = 'Итого'
@@ -77,12 +77,12 @@ class Excel:
 		self.result_workbook.save(f'{month}_{datetime.datetime.today().year}.xlsx')
 
 	def set_result_table(self, month, data):
-		for proj in data[...]:  # Номер проекта
-			sheet = self.result_workbook[str(proj)]
-			for i in range(1, 6):
-				sheet[...][...] = data[...]  # Заполнение данных
-			sheet[f'E{sheet.max_row}'] = data[...]  # Итог часов на проект
-			sheet[f'F{sheet.max_row}'] = data[...]  # Итог выплаченных денег
+		for i in range(data):  # Номер проекта
+			sheet = self.result_workbook[data[i][0]]
+			for j in range(1, 6):
+				sheet[...][...] = data[1][...]  # Заполнение данных
+			# sheet[f'E{sheet.max_row}'] =   # Итог часов на проект
+			# sheet[f'F{sheet.max_row}'] =   # Итог выплаченных денег
 
 		self.result_workbook.save(f'{month}_{datetime.datetime.today().year}.xlsx')
 
@@ -95,13 +95,13 @@ class Bitrix:
 
 	def get_hours_worked(self):
 		data = {}
-		for row in range(3, self.sheet.max_row - 1):
-			data[self.sheet[row][1].value] = [self.sheet[row][2].value, [
-				dict([(int(self.sheet[2][i].value[:4]), self.sheet[row][i].value)]) for i in
-				range(3, self.sheet.max_row - 3)]]
+		print(self.sheet.max_column - 3)
+		for proj in range(3, self.sheet.max_column):
+			for row in range(1, self.sheet.max_row):
+				data[str(int(self.sheet[2][proj].value[:4]))] = dict([(self.sheet[i][1].value, self.sheet[i][proj].value) for i in range(3, self.sheet.max_row-1)])
 		return data
 
-	def get_projects_in_month(self):
+	def get_projects(self):
 		return [int(self.sheet[2][i].value[:4]) for i in range(3, self.sheet.max_row - 3)]
 
 	def get_month_from_name(self):
@@ -148,4 +148,4 @@ class Adesk:  # После получения доступа к данным, п
 
 class Accountant:
 	def calculating_wages(self, worked_hours, standard_hours, salary_rate):
-		return (worked_hours / standard_hours) * salary_rate
+		return float(f"{(worked_hours / standard_hours) * salary_rate:.{2}f}")

@@ -15,22 +15,27 @@ def main():
 			bitrix = back.Bitrix(data_from_user[3])
 			account = back.Accountant()
 
-			projects = bitrix.get_projects_in_month()
+			# projects = adesk.get_projects() 	# Нет доступа
+			projects = ['79', '81', '52']
 			# month_from_bit = bitrix.get_month_from_name()
-			hours_worked = bitrix.get_hours_worked()
+			worked_hours = bitrix.get_hours_worked()
 			standard_hours = consultant.get_standard_hours(data_from_user[1])
 			data_of_workers = excel.get_jobs_and_div()
 
-			print(hours_worked)
+			print(worked_hours)
 			print(standard_hours)
 			print(data_of_workers)
 
 			for project in projects:
-				pass
-				# excel.create_result_table(...)
-				# excel.set_result_table(...)
-			# excel.create_result_table()
-			# excel.create_result_table()
+				res_data = [project]
+				for i in range(len(worked_hours[project])):
+					name = list(worked_hours[project])[i]
+					hours = list(worked_hours[project].values())[i]
+					salary_rate = data_of_workers[list(worked_hours[project].keys())[i]][-1]
+					job = data_of_workers[list(worked_hours[project])[i]][0]
+					div = data_of_workers[list(worked_hours[project])[i]][1]
+					res_data.append([name, job, div, hours, account.calculating_wages(hours, standard_hours, salary_rate)])
+				print(res_data)
 
 
 if __name__ == '__main__':
@@ -38,8 +43,3 @@ if __name__ == '__main__':
 	window = front.Window()
 	th.Thread(target=main, daemon=True).start()
 	window.mainloop()
-
-# excel = back.Excel(r'D:\Dima\Python\ABE\beginning.xlsx')
-# print(excel.get_jobs_and_div())
-# bit = back.Bitrix(r'D:\Dima\Python\ABE\Bitrix24_hours.xlsx')
-# print(bit.get_hours())

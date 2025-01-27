@@ -24,6 +24,7 @@ class Window:
 		self.root = tk.Tk()
 		self.root.title('Accountant')
 		self.root.resizable(False, False)
+		self.root.bind_all("<Key>", self._onKeyRelease, "+")
 
 		self.frm = tk.Frame(self.root)
 		self.frm.pack()
@@ -46,11 +47,22 @@ class Window:
 		self.str_btn = tk.Button(self.frm, text='Запуск', command=self.ready)
 		self.str_btn.grid(column=0, row=4, columnspan=2, padx=self.PAD, pady=self.PAD)
 
+	def _onKeyRelease(self, event):
+		ctrl = (event.state & 0x4) != 0
+		if event.keycode == 88 and ctrl and event.keysym.lower() != "x":
+			event.widget.event_generate("<<Cut>>")
+
+		if event.keycode == 86 and ctrl and event.keysym.lower() != "v":
+			event.widget.event_generate("<<Paste>>")
+
+		if event.keycode == 67 and ctrl and event.keysym.lower() != "c":
+			event.widget.event_generate("<<Copy>>")
+
 	def get_data(self):
 		if self.api_text != self.api.get():
 			with open(self.api_text_path, 'w', encoding='utf-8') as f:
 				f.write(self.api.get())
-		data = (self.api.get(), self.month.get(), self.excel_path.get(), self.bitrix_path.get())
+		data = (self.api.get(), self.month.get(), self.excel_path.get().strip(), self.bitrix_path.get().strip())
 		self.flag_ready = False
 		if '' in data:
 			messagebox.showerror(message='Вы не указали один из параметров')
