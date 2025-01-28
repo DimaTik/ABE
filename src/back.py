@@ -4,6 +4,8 @@ import openpyxl as xl
 import datetime
 import pprint
 import time
+from openpyxl.styles import Alignment
+import openpyxl.utils
 
 months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 
@@ -52,6 +54,7 @@ class Excel:
 		self.month = month
 		self.initial_workbook = xl.load_workbook(path)
 		self.result_workbook = xl.Workbook()
+		self.font_size = 11
 		self.data = {}
 
 	def get_jobs_and_div(self):
@@ -62,20 +65,25 @@ class Excel:
 
 	def create_result_table(self, data):
 		sheet = self.result_workbook.create_sheet(data[0])
-		for i, j in zip(range(1, 7),
-						('Проект', 'ФИО', 'Должность', 'Отдел', 'Часы', 'Деньги')):
+		for i, j in zip(range(1, 7), ('Проект', 'ФИО', 'Должность', 'Отдел', 'Часы', 'Деньги')):
 			sheet.cell(row=1, column=i).value = j 	# Форматирование верхней строчки
 		sheet.merge_cells(start_row=2, end_row=len(data[1])+1, start_column=1, end_column=1)
 		sheet['A2'] = data[0] 	# Проект
+		sheet['A2'].alignment = Alignment(horizontal='center', vertical='center')
 		sheet.merge_cells(start_row=len(data[1])+2, end_row=len(data[1])+2, start_column=1, end_column=4)
 		sheet[f'A{len(data[1])+2}'] = 'Итого'
+		sheet[f'A{len(data[1])+2}'].alignment = Alignment(horizontal='center', vertical='center')
 		self.result_workbook.save(f'{self.month}_{datetime.datetime.today().year}.xlsx')
 
-	def set_result_table(self,data):
+	def set_result_table(self, data):
 		sheet = self.result_workbook[data[0]]
 		for i in range(len(data[1])):
 			for j in range(5):
 				sheet.cell(row=i+2, column=j+2).value = data[1][i][j]  # Заполнение данных
+		for i in range(2, 4):
+			length = max(len(str(sheet.cell(row=j, column=i).value)) for j in range(1, len(data[1])+1)) * (self.font_size**(self.font_size*0.009))
+			for j in range(1, len(data[1]) + 1):
+				sheet.column_dimensions[xl.utils.get_column_letter(i)].width = length
 		sheet.cell(row=len(data[1])+2, column=5).value = sum([data[1][i][3] for i in range(len(data[1]))]) 	# Итого часов на проект
 		sheet.cell(row=len(data[1])+2, column=6).value = sum([data[1][i][4] for i in range(len(data[1]))])  # Итого выплаченных денег
 		self.result_workbook.save(f'{self.month}_{datetime.datetime.today().year}.xlsx')
@@ -93,7 +101,6 @@ class Bitrix:
 
 	def get_hours_worked(self):
 		data = {}
-		print(self.sheet.max_column - 3)
 		for proj in range(3, self.sheet.max_column):
 			for row in range(1, self.sheet.max_row):
 				data[str(int(self.sheet[2][proj].value[:4]))] = dict([(self.sheet[i][1].value, self.sheet[i][proj].value) for i in range(3, self.sheet.max_row-1)])
