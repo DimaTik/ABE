@@ -5,8 +5,7 @@ import datetime
 import pprint
 import time
 
-months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь',
-		  'Декабрь']
+months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 
 
 class Consultant:
@@ -30,7 +29,6 @@ class Consultant:
 			file.write(req.text)
 		with open(fr'C:\Users\dima2\AppData\Local\Temp\calendar_{year}', 'r', encoding='utf-8') as file:
 			src = file.read()
-
 		self.soup = bs4.BeautifulSoup(src, 'lxml')
 
 	def get_standard_hours(self, month):
@@ -50,41 +48,41 @@ class Consultant:
 
 
 class Excel:
-	def __init__(self, path):
-		self.workbook = xl.load_workbook(path)
+	def __init__(self, month, path):
+		self.month = month
+		self.initial_workbook = xl.load_workbook(path)
 		self.result_workbook = xl.Workbook()
 		self.data = {}
 
 	def get_jobs_and_div(self):
-		sheet = self.workbook.active
+		sheet = self.initial_workbook.active
 		for row in sheet.iter_rows(2, sheet.max_row):
 			self.data[row[1].value] = [row[2].value, row[3].value, row[5].value]
 		return self.data
 
-	def create_result_table(self, month, data):
-		for i in range(data):  # Номера проекта
-			sheet = self.result_workbook.create_sheet([data[i][0]])
-			for i, j in zip(range(6),
-							['Проект', 'ФИО', 'Должность', 'Отдел', 'Часы', 'Деньги']):
-				sheet[0][i] = j
+	def create_result_table(self, data):
+		sheet = self.result_workbook.create_sheet(data[0])
+		for i, j in zip(range(1, 7),
+						('Проект', 'ФИО', 'Должность', 'Отдел', 'Часы', 'Деньги')):
+			sheet.cell(row=1, column=i).value = j 	# Форматирование верхней строчки
+		sheet.merge_cells(start_row=2, end_row=len(data[1])+1, start_column=1, end_column=1)
+		sheet['A2'] = data[0] 	# Проект
+		sheet.merge_cells(start_row=len(data[1])+2, end_row=len(data[1])+2, start_column=1, end_column=4)
+		sheet[f'A{len(data[1])+2}'] = 'Итого'
+		self.result_workbook.save(f'{self.month}_{datetime.datetime.today().year}.xlsx')
 
-			sheet.merge_cells(f'A2', f'A{sheet.max_row - 1}')
-			sheet['A2'] = data[i][0]
+	def set_result_table(self,data):
+		sheet = self.result_workbook[data[0]]
+		for i in range(len(data[1])):
+			for j in range(5):
+				sheet.cell(row=i+2, column=j+2).value = data[1][i][j]  # Заполнение данных
+		sheet.cell(row=len(data[1])+2, column=5).value = sum([data[1][i][3] for i in range(len(data[1]))]) 	# Итого часов на проект
+		sheet.cell(row=len(data[1])+2, column=6).value = sum([data[1][i][4] for i in range(len(data[1]))])  # Итого выплаченных денег
+		self.result_workbook.save(f'{self.month}_{datetime.datetime.today().year}.xlsx')
 
-			sheet.merge_cells(f'A{sheet.max_row}', f'D{sheet.max_row}')
-			sheet[f'A{sheet.max_row}'] = 'Итого'
-
-		self.result_workbook.save(f'{month}_{datetime.datetime.today().year}.xlsx')
-
-	def set_result_table(self, month, data):
-		for i in range(data):  # Номер проекта
-			sheet = self.result_workbook[data[i][0]]
-			for j in range(1, 6):
-				sheet[...][...] = data[1][...]  # Заполнение данных
-			# sheet[f'E{sheet.max_row}'] =   # Итог часов на проект
-			# sheet[f'F{sheet.max_row}'] =   # Итог выплаченных денег
-
-		self.result_workbook.save(f'{month}_{datetime.datetime.today().year}.xlsx')
+	def del_sheet1(self):
+		del self.result_workbook[self.result_workbook.sheetnames[0]]
+		self.result_workbook.save(f'{self.month}_{datetime.datetime.today().year}.xlsx')
 
 
 class Bitrix:
@@ -132,7 +130,7 @@ class Adesk:  # После получения доступа к данным, п
 			id_of_project = data_json['projects'][i]['id']
 			incomes = float(data_json['projects'][i]['income'])
 			plan_incomes = float(data_json['projects'][i]['planIncome'])
-			self.data[numbers_of_project] = (incomes, plan_incomes)
+			self.data[numbers_of_project] = (incomes, id_of_project, plan_incomes)
 		return self.data
 
 	def get_income_of_project_in_month(self, month, year, id_proj):

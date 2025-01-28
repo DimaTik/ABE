@@ -68,7 +68,7 @@ class Window:
 			messagebox.showerror(message='Вы не указали один из параметров')
 			return False
 		else:
-			return data
+			return tuple(data)
 
 	def ready(self):
 		self.flag_ready = True
