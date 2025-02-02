@@ -12,7 +12,7 @@ months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май'
 
 
 class Consultant:
-	def __init__(self):
+	def __init__(self, year):
 		self.quarters = {'Январь': [0, 0], 'Февраль': [0, 1], 'Март': [0, 2], 'Апрель': [1, 0], 'Май': [1, 1],
 						 'Июнь': [1, 2], 'Июль': [2, 0], 'Август': [2, 1], 'Сентябрь': [2, 2], 'Ноябрь': [3, 0],
 						 'Октябрь': [3, 1], 'Декабрь': [3, 2]}
@@ -26,7 +26,6 @@ class Consultant:
 			'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0 (Edition Yx 05)"
 		}
 		user = getpass.getuser()
-		year = datetime.date.today().year
 		url = f'https://www.consultant.ru/law/ref/calendar/proizvodstvennye/{year}'
 		req = requests.get(url, headers)
 		with open(fr'C:\Users\{user}\AppData\Local\Temp\calendar_{year}', 'w', encoding='utf-8') as file:
@@ -96,8 +95,8 @@ class Excel:
 
 
 class Bitrix:
-	def __init__(self, path, month):
-		self.path = fr'{path}\{month}_bitrix.xlsx'
+	def __init__(self, path, month, year):
+		self.path = fr'{path}\{month}_{year}_bitrix.xlsx'
 		self.workbook = xl.load_workbook(self.path)
 		self.sheet = self.workbook.active
 
