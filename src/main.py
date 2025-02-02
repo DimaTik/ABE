@@ -11,11 +11,11 @@ def main():
 			adesk = back.Adesk(data_from_user[0])
 			consultant = back.Consultant()
 			excel = back.Excel(data_from_user[1], data_from_user[2])
-			bitrix = back.Bitrix(data_from_user[3])
+			bitrix = back.Bitrix(data_from_user[3], data_from_user[1])
 			account = back.Accountant()
 
-			projects = adesk.get_projects() 	# Нет доступа
-			# projects = ['79', '81', '52']
+			# projects = adesk.get_projects() 	# Нет доступа
+			projects = ['79', '81', '52']
 			worked_hours = bitrix.get_hours_worked()
 			standard_hours = consultant.get_standard_hours(data_from_user[1])
 			data_of_workers = excel.get_jobs_and_div()
@@ -39,7 +39,6 @@ def main():
 
 
 if __name__ == '__main__':
-	consul = back.Consultant()
 	window = front.Window()
 	th.Thread(target=main, daemon=True).start()
 	window.mainloop()

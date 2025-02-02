@@ -6,6 +6,7 @@ import pprint
 import time
 from openpyxl.styles import Alignment
 import openpyxl.utils
+import getpass
 
 months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 
@@ -24,12 +25,13 @@ class Consultant:
 			'Accept': "*/*",
 			'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0 (Edition Yx 05)"
 		}
+		user = getpass.getuser()
 		year = datetime.date.today().year
 		url = f'https://www.consultant.ru/law/ref/calendar/proizvodstvennye/{year}'
 		req = requests.get(url, headers)
-		with open(fr'C:\Users\dima2\AppData\Local\Temp\calendar_{year}', 'w', encoding='utf-8') as file:
+		with open(fr'C:\Users\{user}\AppData\Local\Temp\calendar_{year}', 'w', encoding='utf-8') as file:
 			file.write(req.text)
-		with open(fr'C:\Users\dima2\AppData\Local\Temp\calendar_{year}', 'r', encoding='utf-8') as file:
+		with open(fr'C:\Users\{user}\AppData\Local\Temp\calendar_{year}', 'r', encoding='utf-8') as file:
 			src = file.read()
 		self.soup = bs4.BeautifulSoup(src, 'lxml')
 
@@ -94,8 +96,8 @@ class Excel:
 
 
 class Bitrix:
-	def __init__(self, path):
-		self.path = path
+	def __init__(self, path, month):
+		self.path = fr'{path}\{month}_bitrix.xlsx'
 		self.workbook = xl.load_workbook(self.path)
 		self.sheet = self.workbook.active
 
@@ -116,19 +118,20 @@ class Bitrix:
 class Adesk:  # После получения доступа к данным, попробовать вытащить контрагента
 	def __init__(self, api):
 		# '415b6479c8df4d619ff3e957e6a262242f5c3fa6024744c2ac1ff532e8d76a1e'
-		self.API = api
+		self.api = api
 		self.data = {}
+		self.request = f'https://api.adesk.ru/v1/transactions?api_token={self.api}'
 
-		response = requests.get(f'https://api.adesk.ru/v1/transactions?api_token={self.API}')
+		response = requests.get(self.request)
 		while not response.ok:
-			response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
+			response = requests.get(self.request)
 			time.sleep(1)
 		self.income_json = response.json()
 
 	def get_projects(self):
-		response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
+		response = requests.get(self.request)
 		while not response.ok:
-			response = requests.get(f'https://api.adesk.ru/v1/projects?api_token={self.API}')
+			response = requests.get(self.request)
 			time.sleep(1)
 		data_json = response.json()
 		for i in range(len(data_json['projects'])):

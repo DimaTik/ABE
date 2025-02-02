@@ -2,6 +2,7 @@ import time
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 import os
 
 
@@ -24,30 +25,31 @@ class Window:
 		self.root = tk.Tk()
 		self.root.title('Accountant')
 		self.root.resizable(False, False)
-		self.root.bind_all("<Key>", self._onKeyRelease, "+")
+		self.root.bind_all("<Key>", self.__onKeyRelease, "+")
 
 		self.frm = tk.Frame(self.root)
 		self.frm.pack()
 
-		tk.Label(self.frm, text='Adesk API').grid(column=0, row=0, sticky='w', padx=self.PAD, pady=self.PAD)
-		tk.Label(self.frm, text='Месяц').grid(column=0, row=1, sticky='w', padx=self.PAD, pady=self.PAD)
-		tk.Label(self.frm, text='Путь к Excel').grid(column=0, row=2, sticky='w', padx=self.PAD, pady=self.PAD)
-		tk.Label(self.frm, text='Путь к Bitrix').grid(column=0, row=3, sticky='w', padx=self.PAD, pady=self.PAD)
+		for row, text in enumerate(('Adesk API', 'Месяц', 'Путь к Excel', 'Путь к Bitrix')):
+			tk.Label(self.frm, text=text).grid(column=0, row=row, sticky='w', padx=self.PAD, pady=self.PAD)
+
+		for row, command in enumerate((self.__get_path_to_excel, self.__get_directory_to_bitrix), 2):
+			tk.Button(self.frm, text='Открыть', command=command)\
+				.grid(column=3, row=row, sticky='w', padx=self.PAD, pady=self.PAD)
 
 		self.api = tk.Entry(self.frm, width=self.WIDTH)
 		self.api.insert(0, self.api_text)
 		self.month = ttk.Combobox(self.frm, width=self.WIDTH-3, values=self.months)
 		self.excel_path = tk.Entry(self.frm, width=self.WIDTH)
-		self.bitrix_path = tk.Entry(self.frm, width=self.WIDTH)
-		self.api.grid(column=1, row=0, padx=self.PAD, pady=self.PAD)
-		self.month.grid(column=1, row=1, padx=self.PAD, pady=self.PAD)
-		self.excel_path.grid(column=1, row=2, padx=self.PAD, pady=self.PAD)
-		self.bitrix_path.grid(column=1, row=3, padx=self.PAD, pady=self.PAD)
+		self.bitrix_directory = tk.Entry(self.frm, width=self.WIDTH)
 
-		self.str_btn = tk.Button(self.frm, text='Запуск', command=self.ready)
+		for row, object in enumerate((self.api, self.month, self.excel_path, self.bitrix_directory)):
+			object.grid(column=1, row=row, padx=self.PAD, pady=self.PAD)
+
+		self.str_btn = tk.Button(self.frm, text='Запуск', command=self.__ready)
 		self.str_btn.grid(column=0, row=4, columnspan=2, padx=self.PAD, pady=self.PAD)
 
-	def _onKeyRelease(self, event):
+	def __onKeyRelease(self, event):
 		ctrl = (event.state & 0x4) != 0
 		if event.keycode == 88 and ctrl and event.keysym.lower() != "x":
 			event.widget.event_generate("<<Cut>>")
@@ -58,11 +60,21 @@ class Window:
 		if event.keycode == 67 and ctrl and event.keysym.lower() != "c":
 			event.widget.event_generate("<<Copy>>")
 
+	def __get_path_to_excel(self):
+		path = filedialog.askopenfilename()
+		if path != '':
+			self.excel_path.insert(0, path)
+
+	def __get_directory_to_bitrix(self):
+		directory = filedialog.askdirectory()
+		if directory != '':
+			self.bitrix_directory.insert(0, directory)
+
 	def get_data(self):
 		if self.api_text != self.api.get():
 			with open(self.api_text_path, 'w', encoding='utf-8') as f:
 				f.write(self.api.get())
-		data = (self.api.get(), self.month.get(), self.excel_path.get().strip(), self.bitrix_path.get().strip())
+		data = (self.api.get(), self.month.get(), self.excel_path.get().strip(), self.bitrix_directory.get().strip())
 		self.flag_ready = False
 		if '' in data:
 			messagebox.showerror(message='Вы не указали один из параметров')
@@ -70,7 +82,7 @@ class Window:
 		else:
 			return tuple(data)
 
-	def ready(self):
+	def __ready(self):
 		self.flag_ready = True
 
 	def get_response_ready(self):
